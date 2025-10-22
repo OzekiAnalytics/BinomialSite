@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wrestler Skill Binomial Test</title>
+<style>
+  body { font-family: sans-serif; max-width: 500px; margin: 2rem auto; }
+  input, button { margin: 0.5rem 0; padding: 0.4rem; width: 100%; font-size: 1rem; }
+  #result { margin-top: 1rem; font-weight: bold; }
+</style>
+</head>
+<body>
+  <h2>Wrestler Skill Binomial Test</h2>
+  <label>Wins: <input id="wins" type="number" value="7"></label>
+  <label>Total Matches: <input id="total" type="number" value="10"></label>
+  <label>Expected Win Prob (H₀): <input id="pnull" type="number" step="0.01" value="0.5"></label>
+  <button onclick="runTest()">Run Test</button>
+  <div id="result"></div>
+
+<script>
+// factorial utility for combinations
+function factorial(n){ return n<=1 ? 1 : n*factorial(n-1); }
+function comb(n,k){ return factorial(n)/(factorial(k)*factorial(n-k)); }
+
+// probability of exactly k successes
+function binomPmf(k, n, p){ return comb(n,k)*Math.pow(p,k)*Math.pow(1-p,n-k); }
+
+// two-sided binomial test
+function binomTest(k, n, p){
+  const probs = Array.from({length:n+1}, (_,i)=>binomPmf(i,n,p));
+  const p_obs = binomPmf(k,n,p);
+  // sum of probabilities as or more extreme than observed
+  const p_two = probs.reduce((acc,pv)=> acc + (pv <= p_obs ? pv : 0), 0);
+  return p_two;
+}
+
+function runTest(){
+  const wins = parseInt(document.getElementById('wins').value);
+  const total = parseInt(document.getElementById('total').value);
+  const pnull = parseFloat(document.getElementById('pnull').value);
+
+  const pval = binomTest(wins, total, pnull);
+  const msg = pval < 0.05 ? 
+      "Reject H₀: There is evidence that Wrestler A might be stronger." :
+      "Fail to reject H₀: result could be due to chance.";
+
+  document.getElementById('result').innerHTML = 
+      `P-value: ${pval.toFixed(4)}<br>${msg}`;
+}
+</script>
+</body>
+</html>
