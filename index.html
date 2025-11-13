@@ -10,45 +10,41 @@
 </style>
 </head>
 <body>
-  <h2>Wrestler Skill Binomial Test</h2>
+  <h2>Wrestler Skill Binomial Test (Exact Outcome)</h2>
+  
   <label>Wins: <input id="wins" type="number" value="6"></label>
   <label>Total Matches: <input id="total" type="number" value="7"></label>
   <label>Expected Win Prob (H₀): <input id="pnull" type="number" step="0.01" value="0.5"></label>
+  
   <button onclick="runTest()">Run Test</button>
+  
   <div id="result"></div>
 
 <script>
-// factorial utility for combinations
-function factorial(n){ return n<=1 ? 1 : n*factorial(n-1); }
+// Factorial for combinations
+function factorial(n){ return n <= 1 ? 1 : n * factorial(n - 1); }
+
+// Combinations: n choose k
 function comb(n,k){ return factorial(n)/(factorial(k)*factorial(n-k)); }
 
-// probability of exactly k successes
-function binomCdf(k, n, p) {
-  let sum = 0;
-  for (let i = 0; i <= k; i++) sum += binomPmf(i, n, p);
-  return sum;
+// Probability of exactly k wins
+function binomPmf(k, n, p){ 
+  return comb(n,k) * Math.pow(p,k) * Math.pow(1-p, n-k); 
 }
-
-function binomTestTwoSided(k, n, p) {
-  const cdf = binomCdf(k, n, p);
-  const upperTail = 1 - binomCdf(k - 1, n, p);
-  const pval = Math.min(1, 2 * Math.min(cdf, upperTail));
-  return pval;
-}
-
 
 function runTest(){
   const wins = parseInt(document.getElementById('wins').value);
   const total = parseInt(document.getElementById('total').value);
   const pnull = parseFloat(document.getElementById('pnull').value);
 
-  const pval = binomTestTwoSided(wins, total, pnull);
-  const msg = pval < 0.05 ? 
-      "Reject H₀: There is evidence that Wrestler A might be stronger." :
-      "Fail to reject H₀: result could be due to chance.";
+  const p_exact = binomPmf(wins, total, pnull);
+
+  const msg = p_exact < 0.05 ? 
+      "Rare outcome! Could indicate an advantage." :
+      "Result could easily happen by chance.";
 
   document.getElementById('result').innerHTML = 
-      `P-value: ${pval.toFixed(4)}<br>${msg}`;
+      `P(exactly ${wins} wins) = ${p_exact.toFixed(4)}<br>${msg}`;
 }
 </script>
 </body>
